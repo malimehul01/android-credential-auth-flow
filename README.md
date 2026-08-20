@@ -2,6 +2,9 @@
 
 A robust, production-grade Android authentication workflow demonstrating Google Sign-In with the **Google Credential Manager API**, **Phone Number Hint API**, and **Firebase (Auth & Firestore)**. Built strictly adhering to **Clean Architecture** and **MVVM** principles using **Jetpack Compose**.
 
+<img width="800" height="1687" alt="08201-ezgif com-speed" src="https://github.com/user-attachments/assets/b6e4ee3d-636b-43fd-ab13-b62a53d0aabd" />
+
+
 ---
 
 ## Features
