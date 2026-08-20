@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -16,21 +15,26 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
-import com.mddevlabs.credentialauth_flow.CoreState.SharedPrefs
-import com.mddevlabs.credentialauth_flow.login.LoginScreen
-import com.mddevlabs.credentialauth_flow.login.PhoneNumberEntryScreen
+import com.mddevlabs.credentialauth_flow.data.local.SessionPreferences
+import com.mddevlabs.credentialauth_flow.presentation.auth.LoginScreen
+import com.mddevlabs.credentialauth_flow.presentation.auth.PhoneNumberEntryScreen
+import com.mddevlabs.credentialauth_flow.presentation.home.HomeScreen
 import com.mddevlabs.credentialauth_flow.ui.theme.CredentialAuthFlowTheme
+
+sealed class Screen(val route: String) {
+    data object Login : Screen("login")
+    data object PhoneEntry : Screen("phone_entry")
+    data object Home : Screen("home")
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-            enableEdgeToEdge()
-            setContent {
+        enableEdgeToEdge()
+        setContent {
             CredentialAuthFlowTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Box(modifier = Modifier.padding(innerPadding)){
-                        App()
-                    }
+                    App(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
@@ -38,46 +42,48 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun App() {
-    val context= LocalContext.current
-    val navController= rememberNavController()
-    val user= FirebaseAuth.getInstance().currentUser
-    val startScreen= remember(user){  when{
-         user==null -> "login"
-         !SharedPrefs.getProfileComplete(context) -> "phone_entry"
-         else -> "home"
+fun App(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
+    val navController = rememberNavController()
+    val isUserLoggedIn = remember { FirebaseAuth.getInstance().currentUser != null }
+    val isProfileCompleted = remember { SessionPreferences.getProfileComplete(context) }
+
+    val startDestination = remember(isUserLoggedIn, isProfileCompleted) {
+        when {
+            !isUserLoggedIn -> Screen.Login.route
+            !isProfileCompleted -> Screen.PhoneEntry.route
+            else -> Screen.Home.route
+        }
     }
-        }
+
     NavHost(
-      navController = navController,
-        startDestination = startScreen
-    ){
-        composable("login"){
-            LoginScreen(
-                navController
-            )
+        navController = navController,
+        startDestination = startDestination,
+        modifier = modifier
+    ) {
+        composable(Screen.Login.route) {
+            LoginScreen(navController = navController)
         }
-        composable("phone_entry"){
+
+        composable(Screen.PhoneEntry.route) {
             PhoneNumberEntryScreen(
                 onDone = {
-                    navController.navigate("home"){
-                        popUpTo(0) {inclusive=true}
+                    SessionPreferences.setProfileComplete(context, true)
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(0) { inclusive = true }
                     }
-                    SharedPrefs.setProfileComplete(context,true)
-                  },
+                },
                 onBlock = {
-                    navController.navigate("login"){
-                    popUpTo(0) {inclusive=true} }
-                    },
-
+                    SessionPreferences.setProfileComplete(context, false)
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
             )
         }
-        composable("home"){
-            HomeScreen(navController)
+
+        composable(Screen.Home.route) {
+            HomeScreen(navController = navController)
         }
-
-
     }
-
-
-}
+} 

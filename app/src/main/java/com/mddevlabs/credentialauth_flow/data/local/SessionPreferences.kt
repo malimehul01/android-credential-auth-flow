@@ -1,17 +1,17 @@
-package com.mddevlabs.credentialauth_flow.CoreState
+package com.mddevlabs.credentialauth_flow.data.local
 
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
 
-object SharedPrefs{
+object SessionPreferences{
 
     private val ProfileChecking="profile_complete"
     private fun Prefs(context: Context): SharedPreferences {
         return context.getSharedPreferences("prefs", Context.MODE_PRIVATE)
     }
-    fun setProfileComplete(context: Context,value: Boolean){
-        Prefs(context).edit{
+    fun setProfileComplete(context: Context, value: Boolean){
+        Prefs(context).edit {
         putBoolean(ProfileChecking,value)
         }
     }

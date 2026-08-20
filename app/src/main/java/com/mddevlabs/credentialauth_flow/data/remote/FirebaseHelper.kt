@@ -1,10 +1,10 @@
-package com.mddevlabs.credentialauth_flow.utils
+package com.mddevlabs.credentialauth_flow.data.remote
+
 import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
-import java.util.Date
 
 object FirebaseHelper {
 
@@ -45,4 +45,3 @@ object FirebaseHelper {
 
     }
 }
-
